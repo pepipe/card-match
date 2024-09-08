@@ -86,17 +86,16 @@ namespace CardMatch
         void CardClickHandler(CardView card)
         {
             CardMatchLogger.Log($"Card clicked: {card} | val: {card.CardValue}");
-            DoCardLogic(card);
-        }
-
-        void DoCardLogic(CardView card)
-        {
             if (!_lastCardFacedUp)
             {
                 _lastCardFacedUp = card;
                 return;
             }
+            DoCardLogic(card);
+        }
 
+        void DoCardLogic(CardView card)
+        {
             if (card.CardValue == _lastCardFacedUp.CardValue)
             {
                 CardMatchLogger.Log("Cards Match");
