@@ -79,6 +79,16 @@ namespace CardMatch
             SaveManager.SaveGame(_cards, 0, 0, 0);
         }
 
+        void OnApplicationPause(bool pauseStatus)
+        {
+            if (pauseStatus) SaveManager.SaveGame(_cards, 0, 0, 0);
+        }
+
+        void OnApplicationFocus(bool focusStatus)
+        {
+            if(!focusStatus) SaveManager.SaveGame(_cards, 0, 0, 0);
+        }
+
         public void RestartGame()
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
