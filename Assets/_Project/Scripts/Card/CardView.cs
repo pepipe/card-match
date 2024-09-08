@@ -8,7 +8,7 @@ namespace CardMatch.Card
     public class CardView : MonoBehaviour, IPointerClickHandler
     {
         public int CardValue { get; set; }
-        public event Action<CardView> OnCardClicked;
+        public event Action<CardView> OnCardShow;
 
         CardFlip _cardFlip;
         bool _cardClicked;
@@ -37,14 +37,19 @@ namespace CardMatch.Card
             _cardFlip.FlipCard();
         }
 
-        public void MissMatch()
+        public void InitialShowCard(float showDuration)
+        {
+            _cardFlip.InitialShowCard(showDuration);
+        }
+        
+        public void Flip()
         {
             _cardFlip.FlipCard();
         }
 
         void CardShowHandler()
         {
-            OnCardClicked?.Invoke(this);
+            OnCardShow?.Invoke(this);
         }
 
         void CardFlipBackHandler()

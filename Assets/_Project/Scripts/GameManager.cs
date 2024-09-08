@@ -20,6 +20,8 @@ namespace CardMatch
                  "Note: There's always a bit of time to see the card that depends on the flip animation.")]
         [Range(0f, 2f)]
         [SerializeField] float CardShowDuration = 0f;
+        [Range(1f, 5f)]
+        [SerializeField] float InitialCardShowDuration = 1f;
 
         [Header("References")]
         [SerializeField] GameBoard Board;
@@ -39,17 +41,17 @@ namespace CardMatch
         void Start()
         {
             _cards = CreateGameCardList();
-            Board.SetupBoard(_cards).Forget();
+            Board.SetupBoard(_cards, InitialCardShowDuration).Forget();
         }
 
         void OnEnable()
         {
-            Board.OnCardClicked += CardClickHandler;
+            Board.OnCardShow += CardShowHandler;
         }
 
         void OnDisable()
         {
-            Board.OnCardClicked -= CardClickHandler;
+            Board.OnCardShow -= CardShowHandler;
         }
 
         public void RestartGame()
@@ -91,7 +93,7 @@ namespace CardMatch
             return result;
         }
 
-        void CardClickHandler(CardView card)
+        void CardShowHandler(CardView card)
         {
             CardMatchLogger.Log($"Card clicked: {card} | val: {card.CardValue}");
             if (!_lastCardFacedUp)
@@ -131,8 +133,8 @@ namespace CardMatch
         async UniTaskVoid CardsMissMatch(CardView cardA, CardView cardB)
         {
             await UniTask.Delay(TimeSpan.FromSeconds(CardShowDuration));
-            cardA.MissMatch();
-            cardB.MissMatch();
+            cardA.Flip();
+            cardB.Flip();
         }
     }
 }

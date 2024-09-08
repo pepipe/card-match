@@ -11,24 +11,25 @@ namespace CardMatch.Board
     {
         [SerializeField] GridLayoutGroup Container;
 
-        public Action<CardView> OnCardClicked;
+        public Action<CardView> OnCardShow;
         List<CardView> _cardsInstances = new();
 
         void OnDestroy()
         {
             foreach (var cardInstance in _cardsInstances)
             {
-                cardInstance.OnCardClicked -= OnCardClicked;
+                cardInstance.OnCardShow -= CardShowHandler;
             }
         }
 
-        public async UniTaskVoid SetupBoard(List<CardView> cardsPrefabs)
+        public async UniTaskVoid SetupBoard(List<CardView> cardsPrefabs, float cardsShowDuration)
         {
             float cardWidth = cardsPrefabs[0].GetComponent<RectTransform>().rect.width;
             SetBoardConstraints(cardWidth);
             PlaceCards(cardsPrefabs);
             await UniTask.NextFrame();
             Container.enabled = false;
+            ShowCards(cardsShowDuration);
         }
 
         void SetBoardConstraints(float cardWidth)
@@ -45,14 +46,22 @@ namespace CardMatch.Board
             {
                 var cardView = Instantiate(cardPrefab, Container.transform);
                 cardView.CardValue = cardPrefab.CardValue;
-                cardView.OnCardClicked += CardClickHandler;
+                cardView.OnCardShow += CardShowHandler;
                 _cardsInstances.Add(cardView);
             }
         }
 
-        void CardClickHandler(CardView card)
+        void ShowCards(float cardsShowDuration)
         {
-            OnCardClicked?.Invoke(card);
+            foreach (var card in _cardsInstances)
+            {
+                card.InitialShowCard(cardsShowDuration);
+            }
+        }
+
+        void CardShowHandler(CardView card)
+        {
+            OnCardShow?.Invoke(card);
         }
     }
 }
