@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -5,15 +6,15 @@ namespace CardMatch.Card
 {
     public class CardFlip : MonoBehaviour
     {
-        [Tooltip("Card flip animation duration in seconds.")] [SerializeField]
-        float FlipDuration = 1.0f;
-
-        [Tooltip("Image displayed when the card is facing back.")] [SerializeField]
-        Image BackImage;
-
-        [Tooltip("Image displayed when the card is facing up.")] [SerializeField]
-        Image UpImage;
-
+        [Tooltip("Card flip animation duration in seconds.")]
+        [SerializeField] float FlipDuration = 1.0f;
+        [Tooltip("Image displayed when the card is facing back.")]
+        [SerializeField] Image BackImage;
+        [Tooltip("Image displayed when the card is facing up.")] 
+        [SerializeField] Image UpImage;
+        
+        public event Action OnCardShow;
+        
         bool _isShowingCard;
 
         public void FlipCard()
@@ -27,7 +28,10 @@ namespace CardMatch.Card
         void FinishFlip()
         {
             PrimeTween.Tween.Rotation(gameObject.transform, Vector3.zero, FlipDuration / 2f,
-                PrimeTween.Ease.OutQuint);
+                PrimeTween.Ease.OutQuint).OnComplete(() =>
+            {
+                if(_isShowingCard) OnCardShow?.Invoke();
+            });
         }
 
         void ChangeImage()

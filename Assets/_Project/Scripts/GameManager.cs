@@ -19,6 +19,9 @@ namespace CardMatch
         [Header("Debug Settings")] [SerializeField]
         bool LoggingEnable;
 
+        List<CardView> _cards;
+        CardView _lastCardFacedUp;
+
         void Awake()
         {
             Assert.IsTrue(Config && Config.Cards.Count > 0, $"{nameof(Config)} must be set to a valid configuration.");
@@ -27,8 +30,18 @@ namespace CardMatch
 
         void Start()
         {
-            var cards = CreateGameCardList();
-            Board.SetupBoard(cards);
+            _cards = CreateGameCardList();
+            Board.SetupBoard(_cards);
+        }
+
+        void OnEnable()
+        {
+            Board.OnCardClicked += CardClickHandler;
+        }
+
+        void OnDisable()
+        {
+            Board.OnCardClicked -= CardClickHandler;
         }
 
         public void RestartGame()
@@ -40,8 +53,10 @@ namespace CardMatch
         {
             var cards = GetDifferentCards();
             var result = new List<CardView>();
+            int value = 0;
             foreach (var card in cards)
             {
+                card.CardValue = ++value;
                 result.Add(card);
                 result.Add(card);
             }
@@ -66,6 +81,39 @@ namespace CardMatch
             }
 
             return result;
+        }
+
+        void CardClickHandler(CardView card)
+        {
+            CardMatchLogger.Log($"Card clicked: {card} | val: {card.CardValue}");
+            DoCardLogic(card);
+        }
+
+        void DoCardLogic(CardView card)
+        {
+            if (!_lastCardFacedUp)
+            {
+                _lastCardFacedUp = card;
+                return;
+            }
+
+            if (card.CardValue == _lastCardFacedUp.CardValue)
+            {
+                CardMatchLogger.Log("Cards Match");
+                _lastCardFacedUp.gameObject.SetActive(false);
+                card.gameObject.SetActive(false);
+                //TODO: do matching stuff: score, sound
+            }
+            else
+            {
+                CardMatchLogger.Log("Cards don't match");
+                _lastCardFacedUp.Missmatch();
+                card.Missmatch();
+                //TODO: do mismatching stuff: reset multiplier, sound
+            }
+            
+            CardMatchLogger.Log($"ResetCard: {_lastCardFacedUp.name}");
+            _lastCardFacedUp = null;
         }
     }
 }

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c1a266c97014fe1816875a4d8865906, type: 3}
   m_Name: BoardConfig
   m_EditorClassIdentifier: 
-  Difficulty: 2
+  Difficulty: 0
   Cards:
   - {fileID: 6211726325415962925, guid: 846cd6f2fa071a6498f5722b3654060a, type: 3}
   - {fileID: 7396624440010398949, guid: 368cba163d3c75749a31c28d5c7c1ed8, type: 3}

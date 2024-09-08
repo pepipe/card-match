@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using CardMatch.Card;
 using CardMatch.Utils;
 using UnityEngine;
 using UnityEngine.UI;
+using Object = UnityEngine.Object;
 
 namespace CardMatch.Board
 {
@@ -10,11 +12,22 @@ namespace CardMatch.Board
     {
         [SerializeField] GridLayoutGroup Container;
 
-        public void SetupBoard(List<CardView> cards)
+        public Action<CardView> OnCardClicked;
+        List<CardView> _cardsInstances = new();
+
+        void OnDestroy()
         {
-            float cardWidth = cards[0].GetComponent<RectTransform>().rect.width;
+            foreach (var cardInstance in _cardsInstances)
+            {
+                cardInstance.OnCardClicked -= OnCardClicked;
+            }
+        }
+
+        public void SetupBoard(List<CardView> cardsPrefabs)
+        {
+            float cardWidth = cardsPrefabs[0].GetComponent<RectTransform>().rect.width;
             SetBoardConstraints(cardWidth);
-            PlaceCards(cards);
+            PlaceCards(cardsPrefabs);
         }
 
         void SetBoardConstraints(float cardWidth)
@@ -25,13 +38,20 @@ namespace CardMatch.Board
             Container.constraintCount = maxColumns;
         }
 
-        void PlaceCards(IEnumerable<CardView> cards)
+        void PlaceCards(IEnumerable<CardView> cardsPrefabs)
         {
-            CardMatchLogger.Log("Placing cards");
-            foreach (var card in cards)
+            foreach (var cardPrefab in cardsPrefabs)
             {
-                Instantiate(card, Container.transform);
+                var cardView = Instantiate(cardPrefab, Container.transform);
+                cardView.CardValue = cardPrefab.CardValue;
+                cardView.OnCardClicked += CardClickHandler;
+                _cardsInstances.Add(cardView);
             }
+        }
+
+        void CardClickHandler(CardView card)
+        {
+            OnCardClicked?.Invoke(card);
         }
     }
 }
