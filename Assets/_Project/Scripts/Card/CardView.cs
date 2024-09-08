@@ -47,6 +47,11 @@ namespace CardMatch.Card
             _cardFlip.FlipCard();
         }
 
+        public bool IsCardFlipped()
+        {
+            return _cardFlip.IsCardFlipped();
+        }
+
         void CardShowHandler()
         {
             OnCardShow?.Invoke(this);

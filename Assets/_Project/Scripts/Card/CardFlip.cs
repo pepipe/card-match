@@ -46,6 +46,11 @@ namespace CardMatch.Card
                 .OnComplete(ChangeImage);
         }
 
+        public bool IsCardFlipped()
+        {
+            return _isShowingCard;
+        }
+
         void FinishFlip()
         {
             Tween.Rotation(gameObject.transform, Vector3.zero, FlipDuration / 2f, Ease.OutQuint).OnComplete(() =>
