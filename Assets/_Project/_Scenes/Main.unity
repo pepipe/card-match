@@ -386,6 +386,7 @@ MonoBehaviour:
   MissMatchSound: {fileID: 622760161}
   GameOverSound: {fileID: 1925474333}
   LoggingEnable: 1
+  StartWithoutSave: 0
 --- !u!4 &159420371
 Transform:
   m_ObjectHideFlags: 0

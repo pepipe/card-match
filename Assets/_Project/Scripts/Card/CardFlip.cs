@@ -1,6 +1,7 @@
 using System;
 using CardMatch.SaveGame;
 using CardMatch.Utils;
+using Cysharp.Threading.Tasks;
 using PrimeTween;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,9 +22,9 @@ namespace CardMatch.Card
         
         bool _isShowingCard;
         
-        public void InitialShowCard(float showDuration)
+        public async UniTask InitialShowCard(float showDuration)
         {
-            Sequence.Create()
+            await Sequence.Create()
                 .Chain(Tween.Rotation(gameObject.transform, new Vector3(0, -90f, 0), FlipDuration / 2f, Ease.InQuint)
                     .OnComplete(() =>
                     {
@@ -41,9 +42,9 @@ namespace CardMatch.Card
                 .Chain(Tween.Rotation(gameObject.transform, Vector3.zero, FlipDuration / 2f, Ease.OutQuint));
         }
         
-        public void MakeCardFaceUp()
+        public void MakeCardFace(bool faceUp)
         {
-            _isShowingCard = true;
+            _isShowingCard = faceUp;
             UpImage.gameObject.SetActive(_isShowingCard);
             BackImage.gameObject.SetActive(!_isShowingCard);
         }

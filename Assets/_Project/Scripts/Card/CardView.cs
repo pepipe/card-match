@@ -1,5 +1,6 @@
 ﻿using System;
 using CardMatch.Utils;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -15,6 +16,7 @@ namespace CardMatch.Card
         public event Action<CardView> OnCardShow;
 
         CardFlip _cardFlip;
+        bool _isClickable = true;
         bool _cardClicked;
 
         void Awake()
@@ -36,22 +38,29 @@ namespace CardMatch.Card
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            if (_cardClicked) return;
+            if (_cardClicked || !_isClickable) return;
             FlipSound.PlayOneShot();
             _cardClicked = true;
             _cardFlip.FlipCard();
         }
 
-        public void InitialShowCard(float showDuration)
+        public async UniTaskVoid InitialShowCard(float showDuration)
         {
-            _cardFlip.InitialShowCard(showDuration);
+            _isClickable = false;
+            await _cardFlip.InitialShowCard(showDuration);
+            _isClickable = true;
         }
 
         public void MakeCardFaceUp()
         {
-            _cardFlip.MakeCardFaceUp();
+            _cardFlip.MakeCardFace(true);
         }
-        
+
+        public void MakeCardFaceDown()
+        {
+            _cardFlip.MakeCardFace(false);
+        }
+
         public void Flip()
         {
             _cardFlip.FlipCard();

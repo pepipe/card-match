@@ -101,7 +101,7 @@ namespace CardMatch.Board
             foreach (var card in _cardsInstances)
             {
                 if(card.IsCardFlipped()) continue;
-                card.InitialShowCard(cardsShowDuration);
+                card.InitialShowCard(cardsShowDuration).Forget();
             }
         }
 

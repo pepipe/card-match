@@ -43,6 +43,7 @@ namespace CardMatch
         
         [Header("Debug Settings")]
         [SerializeField] bool LoggingEnable;
+        [SerializeField] bool StartWithoutSave;
 
         public event Action OnScoreChanged;
         public event Action OnTimeUpdate;
@@ -62,6 +63,7 @@ namespace CardMatch
 
         void Awake()
         {
+            PrimeTween.PrimeTweenConfig.warnTweenOnDisabledTarget = false;
             Assert.IsTrue(Config && Config.Cards.Count > 0, $"{nameof(Config)} must be set to a valid configuration.");
             CardMatchLogger.LoggingEnabled = LoggingEnable;
             if(_difficulty == GameDifficulty.None) _difficulty = Difficulty;
@@ -74,6 +76,8 @@ namespace CardMatch
 
         async void Start()
         {
+            if(StartWithoutSave) SaveManager.DeleteSaveFile();
+
             var loadGame = SaveManager.LoadGame();
             if (loadGame != null)
             {
@@ -96,15 +100,6 @@ namespace CardMatch
         void Update()
         {
             if(_isRunning) _scoreSystem?.Tick(Time.deltaTime);
-        }
-
-        void OnApplicationFocus(bool focusStatus)
-        {
-            CardMatchLogger.Log("OnApplicationFocus");
-            if (!focusStatus && _isRunning && _scoreSystem != null)
-            {
-                SaveManager.SaveGame(_cards, _scoreSystem.CurrentScore, _scoreSystem.CurrentMultiplier, _scoreSystem.Time);
-            }
         }
 
         void OnApplicationPause(bool pauseStatus)
@@ -271,7 +266,9 @@ namespace CardMatch
         {
             await UniTask.Delay(TimeSpan.FromSeconds(CardShowDuration));
             MatchSound.PlayOneShot();
+            cardA.MakeCardFaceDown();
             cardA.gameObject.SetActive(false);
+            cardB.MakeCardFaceDown();
             cardB.gameObject.SetActive(false);
         }
 
