@@ -6,8 +6,8 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/_Project/_Scenes/Tests/TestFlip.unity
-    guid: 3fc8acdd13e6c734bafef6554d6fdbcd
+    path: Assets/_Project/_Scenes/Main.unity
+    guid: 7ca99f0715de3cc478f76054e9f7af9b
   m_configObjects:
     com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 219f5348e8fb03e4ab0c9b248376202b, type: 2}
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 8e4331636921de541935656d28bced2e, type: 2}
