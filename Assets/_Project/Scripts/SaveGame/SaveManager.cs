@@ -23,7 +23,7 @@ namespace CardMatch.SaveGame
         {
             if (!File.Exists(SaveFilePath))
             {
-                Debug.LogWarning("No save file found!");
+                CardMatchLogger.LogWarning("No save file found!");
                 return null;
             }
 
@@ -39,7 +39,7 @@ namespace CardMatch.SaveGame
                 CardStates = new List<CardState>(),
                 Score = score,
                 ScoreMultiplier = scoreMultiplier,
-                Timer = timer
+                Time = timer
             };
             
             foreach (var card in cards)
@@ -58,10 +58,9 @@ namespace CardMatch.SaveGame
         
         public static void DeleteSaveFile()
         {
-            if (File.Exists(SaveFilePath))
-            {
-                File.Delete(SaveFilePath);
-            }
+            if (!File.Exists(SaveFilePath)) return;
+            CardMatchLogger.Log($"Delete save file {SaveFilePath}");
+            File.Delete(SaveFilePath);
         }
     }
 }

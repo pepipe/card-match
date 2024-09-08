@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using CardMatch.Board;
 using CardMatch.Card;
 using CardMatch.SaveGame;
+using CardMatch.Score;
 using CardMatch.Utils;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -39,15 +41,32 @@ namespace CardMatch
         [Header("Debug Settings")]
         [SerializeField] bool LoggingEnable;
 
+        public event Action OnScoreChanged;
+        public event Action OnTimeUpdate;
+        public event Action OnGameOver;
+
+        public int GetScore() => _scoreSystem.CurrentScore;
+        public int GetScoreMultiplier() => _scoreSystem.CurrentMultiplier;
+        public float GetGameTime() => _scoreSystem.Time;
+
         static GameDifficulty _difficulty = GameDifficulty.None;
+
+        ScoreSystem _scoreSystem;
         List<CardView> _cards;
         CardView _lastCardFacedUp;
+        float _timer;
+        bool _isRunning;
 
         void Awake()
         {
             Assert.IsTrue(Config && Config.Cards.Count > 0, $"{nameof(Config)} must be set to a valid configuration.");
             CardMatchLogger.LoggingEnabled = LoggingEnable;
             if(_difficulty == GameDifficulty.None) _difficulty = Difficulty;
+        }
+
+        void OnEnable()
+        {
+            Board.OnCardShow += CardShowHandler;
         }
 
         async void Start()
@@ -57,37 +76,56 @@ namespace CardMatch
             {
                 _cards = await Board.SetupBoard(loadGame.CardStates, Config.Cards, InitialCardShowDuration);
                 _lastCardFacedUp = Board.SavedCardFacedUp();
-                //LOAD score, score multiplier and timer
+                _scoreSystem = new ScoreSystem(loadGame.Score, loadGame.ScoreMultiplier, loadGame.Time);
             }
             else
             {
                 _cards = await Board.SetupBoard(CreateGameCardList(), InitialCardShowDuration);
+                _scoreSystem = new ScoreSystem();
             }
+
+            _isRunning = true;
+            OnScoreChanged?.Invoke();
+            OnTimeUpdate?.Invoke();
+            PeriodicScoreUpdate().Forget();
         }
 
-        void OnEnable()
+        void Update()
         {
-            Board.OnCardShow += CardShowHandler;
-        }
-
-        void OnDisable()
-        {
-            Board.OnCardShow -= CardShowHandler;
-        }
-
-        void OnApplicationQuit()
-        {
-            SaveManager.SaveGame(_cards, 0, 0, 0);
-        }
-
-        void OnApplicationPause(bool pauseStatus)
-        {
-            if (pauseStatus) SaveManager.SaveGame(_cards, 0, 0, 0);
+            if(_isRunning) _scoreSystem?.Tick(Time.deltaTime);
         }
 
         void OnApplicationFocus(bool focusStatus)
         {
-            if(!focusStatus) SaveManager.SaveGame(_cards, 0, 0, 0);
+            CardMatchLogger.Log("OnApplicationFocus");
+            if (!focusStatus && _isRunning && _scoreSystem != null)
+            {
+                SaveManager.SaveGame(_cards, _scoreSystem.CurrentScore, _scoreSystem.CurrentMultiplier, _scoreSystem.Time);
+            }
+        }
+
+        void OnApplicationPause(bool pauseStatus)
+        {
+            CardMatchLogger.Log("OnApplicationPause");
+            if (pauseStatus && _isRunning && _scoreSystem != null)
+            {
+                SaveManager.SaveGame(_cards, _scoreSystem.CurrentScore, _scoreSystem.CurrentMultiplier, _scoreSystem.Time);
+            }
+        }
+
+        void OnApplicationQuit()
+        {
+            CardMatchLogger.Log("OnApplicationQuit");
+            if (_isRunning)
+            {
+                SaveManager.SaveGame(_cards, _scoreSystem.CurrentScore, _scoreSystem.CurrentMultiplier, _scoreSystem.Time);
+            }
+        }
+
+        void OnDisable()
+        {
+            CardMatchLogger.Log("OnDisable");
+            Board.OnCardShow -= CardShowHandler;
         }
 
         public void RestartGame()
@@ -116,30 +154,41 @@ namespace CardMatch
             
         }
 
-        async UniTaskVoid StartNewGame(GameDifficulty difficulty)
+        static async UniTaskVoid StartNewGame(GameDifficulty difficulty)
         {
             _difficulty = difficulty;
             await LoadGameSceneAsync(difficulty);
         }
         
-        async UniTask LoadGameSceneAsync(GameDifficulty difficulty)
+        static async UniTask LoadGameSceneAsync(GameDifficulty difficulty)
         {
-            // Load the scene asynchronously
             var asyncOperation = SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex);
-            asyncOperation.allowSceneActivation = false;
-            
-            while (!asyncOperation.isDone)
+            if (asyncOperation != null)
             {
-                if (asyncOperation.progress >= 0.9f)
-                {
-                    _difficulty = difficulty;
-                    asyncOperation.allowSceneActivation = true;
-                }
+                asyncOperation.allowSceneActivation = false;
 
-                await UniTask.NextFrame();
+                while (!asyncOperation.isDone)
+                {
+                    if (asyncOperation.progress >= 0.9f)
+                    {
+                        _difficulty = difficulty;
+                        asyncOperation.allowSceneActivation = true;
+                    }
+
+                    await UniTask.NextFrame();
+                }
             }
         }
-        
+
+        async UniTask PeriodicScoreUpdate()
+        {
+            while (_isRunning)
+            {
+                OnTimeUpdate?.Invoke();
+                await UniTask.Delay(1000);
+            }
+        }
+
         static int GetDifficulty(GameDifficulty difficulty)
         {
             switch (difficulty)
@@ -196,28 +245,33 @@ namespace CardMatch
                 _lastCardFacedUp = card;
                 return;
             }
-            DoCardLogic(card);
+            DoCardLogic(card).Forget();
         }
 
-        void DoCardLogic(CardView card)
+        async UniTaskVoid DoCardLogic(CardView card)
         {
             if (card.CardIndex == _lastCardFacedUp.CardIndex)
             {
                 CardMatchLogger.Log("Cards Match");
-                CardsMatch(_lastCardFacedUp, card).Forget();
-                //TODO: do matching stuff: score, sound
+                _scoreSystem.AddScore();
+                _scoreSystem.IncreaseMultiplier();
+                await CardsMatch(_lastCardFacedUp, card);
+                CheckGameOver().Forget();
+                //TODO: do matching stuff:  sound
             }
             else
             {
                 CardMatchLogger.Log("Cards don't match");
                 CardsMissMatch(_lastCardFacedUp, card).Forget();
-                //TODO: do mismatching stuff: reset multiplier, sound
+                _scoreSystem.ResetMultiplier();
+                //TODO: do mismatching stuff: sound
             }
 
+            OnScoreChanged?.Invoke();
             _lastCardFacedUp = null;
         }
-
-        async UniTaskVoid CardsMatch(CardView cardA, CardView cardB)
+        
+        async UniTask CardsMatch(CardView cardA, CardView cardB)
         {
             await UniTask.Delay(TimeSpan.FromSeconds(CardShowDuration));
             cardA.gameObject.SetActive(false);
@@ -229,6 +283,17 @@ namespace CardMatch
             await UniTask.Delay(TimeSpan.FromSeconds(CardShowDuration));
             cardA.Flip();
             cardB.Flip();
+        }
+
+        async UniTaskVoid CheckGameOver()
+        {
+            await UniTask.NextFrame();
+            if (_cards.Any(card => card.gameObject.activeSelf)) return;
+
+            CardMatchLogger.Log("Game Over");
+            _isRunning = false;
+            SaveManager.DeleteSaveFile();
+            OnGameOver?.Invoke();
         }
     }
 }

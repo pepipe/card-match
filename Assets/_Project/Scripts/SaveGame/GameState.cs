@@ -8,6 +8,6 @@ namespace CardMatch.SaveGame
         public List<CardState> CardStates = new();
         public int Score;
         public int ScoreMultiplier;
-        public float Timer;
+        public float Time;
     }
 }
