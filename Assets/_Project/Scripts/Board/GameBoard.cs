@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using CardMatch.Card;
+using CardMatch.SaveGame;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
@@ -22,7 +23,19 @@ namespace CardMatch.Board
             }
         }
 
-        public async UniTaskVoid SetupBoard(List<CardView> cardsPrefabs, float cardsShowDuration)
+        public async UniTask<List<CardView>> SetupBoard(List<CardState> savedCards, List<CardView> cardsPrefabs, float cardsShowDuration)
+        {
+            float cardWidth = cardsPrefabs[0].GetComponent<RectTransform>().rect.width;
+            SetBoardConstraints(cardWidth);
+            PlaceCards(savedCards, cardsPrefabs);
+            await UniTask.NextFrame();
+            Container.enabled = false;
+            LoadCardStates(savedCards);
+            ShowCards(cardsShowDuration);
+            return _cardsInstances;
+        }
+        
+        public async UniTask<List<CardView>> SetupBoard(List<CardView> cardsPrefabs, float cardsShowDuration)
         {
             float cardWidth = cardsPrefabs[0].GetComponent<RectTransform>().rect.width;
             SetBoardConstraints(cardWidth);
@@ -30,6 +43,7 @@ namespace CardMatch.Board
             await UniTask.NextFrame();
             Container.enabled = false;
             ShowCards(cardsShowDuration);
+            return _cardsInstances;
         }
 
         void SetBoardConstraints(float cardWidth)
@@ -40,14 +54,37 @@ namespace CardMatch.Board
             Container.constraintCount = maxColumns;
         }
 
+        void PlaceCards(IEnumerable<CardState> cardsState, List<CardView> cardsPrefabs)
+        {
+            foreach (var cardState in cardsState)
+            {
+                var cardView = Instantiate(cardsPrefabs[cardState.CardIndex], Container.transform);
+                cardView.CardId = cardState.CardId;
+                cardView.CardIndex = cardsPrefabs[cardState.CardIndex].CardIndex;
+                cardView.OnCardShow += CardShowHandler;
+                _cardsInstances.Add(cardView);
+            }
+        }
+        
         void PlaceCards(IEnumerable<CardView> cardsPrefabs)
         {
+            int cardId = 0;
             foreach (var cardPrefab in cardsPrefabs)
             {
                 var cardView = Instantiate(cardPrefab, Container.transform);
-                cardView.CardValue = cardPrefab.CardValue;
+                cardView.CardIndex = cardPrefab.CardIndex;
+                cardView.CardId = cardId++;
                 cardView.OnCardShow += CardShowHandler;
                 _cardsInstances.Add(cardView);
+            }
+        }
+
+        void LoadCardStates(List<CardState> savedCards)
+        {
+            for (int i = 0; i < _cardsInstances.Count; ++i)
+            {
+                var cardState = savedCards[i];
+                _cardsInstances[i].LoadState(cardState.IsActive, cardState.IsFaceUp);
             }
         }
 
@@ -55,6 +92,7 @@ namespace CardMatch.Board
         {
             foreach (var card in _cardsInstances)
             {
+                if(card.IsCardFlipped()) continue;
                 card.InitialShowCard(cardsShowDuration);
             }
         }

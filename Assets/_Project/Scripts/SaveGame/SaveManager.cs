@@ -10,9 +10,9 @@ namespace CardMatch.SaveGame
     {
         static string SaveFilePath => Path.Combine(Application.persistentDataPath, "game_save.json");
         
-        public static void SaveGame(IEnumerable<CardView> cards)
+        public static void SaveGame(IEnumerable<CardView> cards, int score, int scoreMultiplier, float timer)
         {
-            var gameState = CreateGameState(cards);
+            var gameState = CreateGameState(cards, score, scoreMultiplier, timer);
             string json = JsonUtility.ToJson(gameState);
             File.WriteAllText(SaveFilePath, json);
             CardMatchLogger.Log($"Saved game state to {SaveFilePath}");
@@ -31,21 +31,22 @@ namespace CardMatch.SaveGame
             return JsonUtility.FromJson<GameState>(json);
         }
 
-        static GameState CreateGameState(IEnumerable<CardView> cards)
+        static GameState CreateGameState(IEnumerable<CardView> cards, int score, int scoreMultiplier, float timer)
         {
             var gameState = new GameState
             {
                 CardStates = new List<CardState>(),
-                Score = 0,
-                ScoreMultiplier = 0,
-                Timer = 0f
+                Score = score,
+                ScoreMultiplier = scoreMultiplier,
+                Timer = timer
             };
             
             foreach (var card in cards)
             {
                 gameState.CardStates.Add(new CardState
                 {
-                    CardValue = card.CardValue,
+                    CardId = card.CardId,
+                    CardIndex = card.CardIndex,
                     IsFaceUp = card.IsCardFlipped(),
                     IsActive = card.gameObject.activeSelf
                 });

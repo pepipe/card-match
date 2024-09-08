@@ -1,4 +1,5 @@
 using System;
+using CardMatch.SaveGame;
 using PrimeTween;
 using UnityEngine;
 using UnityEngine.UI;
@@ -49,6 +50,13 @@ namespace CardMatch.Card
         public bool IsCardFlipped()
         {
             return _isShowingCard;
+        }
+
+        public void LoadState(bool isFaceUp)
+        {
+            _isShowingCard = isFaceUp;
+            UpImage.gameObject.SetActive(_isShowingCard);
+            BackImage.gameObject.SetActive(!_isShowingCard);
         }
 
         void FinishFlip()

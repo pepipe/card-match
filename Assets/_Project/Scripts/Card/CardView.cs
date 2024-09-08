@@ -1,4 +1,5 @@
 ﻿using System;
+using CardMatch.SaveGame;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -7,7 +8,8 @@ namespace CardMatch.Card
     [RequireComponent(typeof(CardFlip))]
     public class CardView : MonoBehaviour, IPointerClickHandler
     {
-        public int CardValue { get; set; }
+        public int CardId { get; set; }
+        public int CardIndex { get; set; }
         public event Action<CardView> OnCardShow;
 
         CardFlip _cardFlip;
@@ -28,6 +30,12 @@ namespace CardMatch.Card
         {
             _cardFlip.OnCardShow -= CardShowHandler;
             _cardFlip.OnCardFlipBack -= CardFlipBackHandler;
+        }
+
+        public void LoadState(bool isActive, bool isFaceUp)
+        {
+            gameObject.SetActive(isActive);
+            _cardFlip.LoadState(isFaceUp);
         }
 
         public void OnPointerClick(PointerEventData eventData)

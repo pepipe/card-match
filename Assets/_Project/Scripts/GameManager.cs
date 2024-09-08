@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using CardMatch.Board;
 using CardMatch.Card;
+using CardMatch.SaveGame;
 using CardMatch.Utils;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -38,10 +39,18 @@ namespace CardMatch
             CardMatchLogger.LoggingEnabled = LoggingEnable;
         }
 
-        void Start()
+        async void Start()
         {
-            _cards = CreateGameCardList();
-            Board.SetupBoard(_cards, InitialCardShowDuration).Forget();
+            var loadGame = SaveManager.LoadGame();
+            if (loadGame != null)
+            {
+                _cards = await Board.SetupBoard(loadGame.CardStates, Config.Cards, InitialCardShowDuration);
+                //LOAD score, score multiplier and timer
+            }
+            else
+            {
+                _cards = await Board.SetupBoard(CreateGameCardList(), InitialCardShowDuration);
+            }
         }
 
         void OnEnable()
@@ -54,6 +63,11 @@ namespace CardMatch
             Board.OnCardShow -= CardShowHandler;
         }
 
+        void OnApplicationQuit()
+        {
+            SaveManager.SaveGame(_cards, 0, 0, 0);
+        }
+
         public void RestartGame()
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
@@ -63,10 +77,8 @@ namespace CardMatch
         {
             var cards = GetDifferentCards();
             var result = new List<CardView>();
-            int value = 0;
             foreach (var card in cards)
             {
-                card.CardValue = ++value;
                 result.Add(card);
                 result.Add(card);
             }
@@ -84,10 +96,11 @@ namespace CardMatch
             while (usedIndices.Count < differentCardsNumber)
             {
                 int randomIndex = Random.Range(0, Config.Cards.Count);
-                if (usedIndices.Add(randomIndex))
-                {
-                    result.Add(Config.Cards[randomIndex]);
-                }
+                if (!usedIndices.Add(randomIndex)) continue;
+                
+                var card = Config.Cards[randomIndex];
+                card.CardIndex = randomIndex;
+                result.Add(card);
             }
 
             return result;
@@ -95,7 +108,7 @@ namespace CardMatch
 
         void CardShowHandler(CardView card)
         {
-            CardMatchLogger.Log($"Card clicked: {card} | val: {card.CardValue}");
+            CardMatchLogger.Log($"Card clicked: {card} | val: {card.CardIndex}");
             if (!_lastCardFacedUp)
             {
                 _lastCardFacedUp = card;
@@ -106,7 +119,7 @@ namespace CardMatch
 
         void DoCardLogic(CardView card)
         {
-            if (card.CardValue == _lastCardFacedUp.CardValue)
+            if (card.CardIndex == _lastCardFacedUp.CardIndex)
             {
                 CardMatchLogger.Log("Cards Match");
                 CardsMatch(_lastCardFacedUp, card).Forget();
@@ -118,8 +131,7 @@ namespace CardMatch
                 CardsMissMatch(_lastCardFacedUp, card).Forget();
                 //TODO: do mismatching stuff: reset multiplier, sound
             }
-            
-            CardMatchLogger.Log($"ResetCard: {_lastCardFacedUp.name}");
+
             _lastCardFacedUp = null;
         }
 
