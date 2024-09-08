@@ -1,5 +1,6 @@
 using System;
 using CardMatch.SaveGame;
+using CardMatch.Utils;
 using PrimeTween;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,7 +15,7 @@ namespace CardMatch.Card
         [SerializeField] Image BackImage;
         [Tooltip("Image displayed when the card is facing up.")] 
         [SerializeField] Image UpImage;
-        
+
         public event Action OnCardShow;
         public event Action OnCardFlipBack;
         

@@ -37,7 +37,10 @@ namespace CardMatch
 
         [Header("References")]
         [SerializeField] GameBoard Board;
-
+        [SerializeField] SoundClip MatchSound;
+        [SerializeField] SoundClip MissMatchSound;
+        [SerializeField] SoundClip GameOverSound;
+        
         [Header("Debug Settings")]
         [SerializeField] bool LoggingEnable;
 
@@ -128,30 +131,24 @@ namespace CardMatch
             Board.OnCardShow -= CardShowHandler;
         }
 
-        public void RestartGame()
-        {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-        }
-
-        public void NewGameEasy()
+        public static void NewGameEasy()
         {
             SaveManager.DeleteSaveFile();
             StartNewGame(GameDifficulty.Easy).Forget();
             
         }
 
-        public void NewGameMedium()
+        public static void NewGameMedium()
         {
             SaveManager.DeleteSaveFile();
             StartNewGame(GameDifficulty.Medium).Forget();
             
         }
 
-        public void NewGameHard()
+        public static void NewGameHard()
         {
             SaveManager.DeleteSaveFile();
             StartNewGame(GameDifficulty.Hard).Forget();
-            
         }
 
         static async UniTaskVoid StartNewGame(GameDifficulty difficulty)
@@ -257,7 +254,6 @@ namespace CardMatch
                 _scoreSystem.IncreaseMultiplier();
                 await CardsMatch(_lastCardFacedUp, card);
                 CheckGameOver().Forget();
-                //TODO: do matching stuff:  sound
             }
             else
             {
@@ -274,6 +270,7 @@ namespace CardMatch
         async UniTask CardsMatch(CardView cardA, CardView cardB)
         {
             await UniTask.Delay(TimeSpan.FromSeconds(CardShowDuration));
+            MatchSound.PlayOneShot();
             cardA.gameObject.SetActive(false);
             cardB.gameObject.SetActive(false);
         }
@@ -281,6 +278,7 @@ namespace CardMatch
         async UniTaskVoid CardsMissMatch(CardView cardA, CardView cardB)
         {
             await UniTask.Delay(TimeSpan.FromSeconds(CardShowDuration));
+            MissMatchSound.PlayOneShot();
             cardA.Flip();
             cardB.Flip();
         }
@@ -290,7 +288,9 @@ namespace CardMatch
             await UniTask.NextFrame();
             if (_cards.Any(card => card.gameObject.activeSelf)) return;
 
+            await UniTask.NextFrame();
             CardMatchLogger.Log("Game Over");
+            GameOverSound.PlayOneShot();
             _isRunning = false;
             SaveManager.DeleteSaveFile();
             OnGameOver?.Invoke();

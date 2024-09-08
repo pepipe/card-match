@@ -1,4 +1,5 @@
 ﻿using System;
+using CardMatch.Utils;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -7,6 +8,8 @@ namespace CardMatch.Card
     [RequireComponent(typeof(CardFlip))]
     public class CardView : MonoBehaviour, IPointerClickHandler
     {
+        [SerializeField] SoundClip FlipSound;
+
         public int CardId { get; set; }
         public int CardIndex { get; set; }
         public event Action<CardView> OnCardShow;
@@ -34,6 +37,7 @@ namespace CardMatch.Card
         public void OnPointerClick(PointerEventData eventData)
         {
             if (_cardClicked) return;
+            FlipSound.PlayOneShot();
             _cardClicked = true;
             _cardFlip.FlipCard();
         }
