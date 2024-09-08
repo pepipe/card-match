@@ -54,5 +54,13 @@ namespace CardMatch.SaveGame
 
             return gameState;
         }
+        
+        public static void DeleteSaveFile()
+        {
+            if (File.Exists(SaveFilePath))
+            {
+                File.Delete(SaveFilePath);
+            }
+        }
     }
 }

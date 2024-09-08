@@ -12,11 +12,20 @@ using Random = UnityEngine.Random;
 
 namespace CardMatch
 {
+    public enum GameDifficulty
+    {
+        Easy,
+        Medium,
+        Hard,
+        None
+    }
+
     public class GameManager : MonoBehaviour
     {
         [Header("Game Settings")] 
+        [Tooltip("Difficulties: Easy - 2 to 4 different cards | Medium - 5 to 8 different cards | Hard - 9 to 12 different cards.")]
+        [SerializeField] GameDifficulty Difficulty;
         [SerializeField] BoardConfig Config;
-
         [Tooltip("How much more cards should be showed before flipping back/disappear. " +
                  "Note: There's always a bit of time to see the card that depends on the flip animation.")]
         [Range(0f, 2f)]
@@ -30,6 +39,7 @@ namespace CardMatch
         [Header("Debug Settings")]
         [SerializeField] bool LoggingEnable;
 
+        static GameDifficulty _difficulty = GameDifficulty.None;
         List<CardView> _cards;
         CardView _lastCardFacedUp;
 
@@ -37,6 +47,7 @@ namespace CardMatch
         {
             Assert.IsTrue(Config && Config.Cards.Count > 0, $"{nameof(Config)} must be set to a valid configuration.");
             CardMatchLogger.LoggingEnabled = LoggingEnable;
+            if(_difficulty == GameDifficulty.None) _difficulty = Difficulty;
         }
 
         async void Start()
@@ -73,6 +84,66 @@ namespace CardMatch
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
 
+        public void NewGameEasy()
+        {
+            SaveManager.DeleteSaveFile();
+            StartNewGame(GameDifficulty.Easy).Forget();
+            
+        }
+
+        public void NewGameMedium()
+        {
+            SaveManager.DeleteSaveFile();
+            StartNewGame(GameDifficulty.Medium).Forget();
+            
+        }
+
+        public void NewGameHard()
+        {
+            SaveManager.DeleteSaveFile();
+            StartNewGame(GameDifficulty.Hard).Forget();
+            
+        }
+
+        async UniTaskVoid StartNewGame(GameDifficulty difficulty)
+        {
+            _difficulty = difficulty;
+            await LoadGameSceneAsync(difficulty);
+        }
+        
+        async UniTask LoadGameSceneAsync(GameDifficulty difficulty)
+        {
+            // Load the scene asynchronously
+            var asyncOperation = SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex);
+            asyncOperation.allowSceneActivation = false;
+            
+            while (!asyncOperation.isDone)
+            {
+                if (asyncOperation.progress >= 0.9f)
+                {
+                    _difficulty = difficulty;
+                    asyncOperation.allowSceneActivation = true;
+                }
+
+                await UniTask.NextFrame();
+            }
+        }
+        
+        static int GetDifficulty(GameDifficulty difficulty)
+        {
+            switch (difficulty)
+            {
+                case GameDifficulty.Easy:
+                    return Random.Range(2, 5);
+                case GameDifficulty.Medium:
+                    return Random.Range(5, 9);
+                case GameDifficulty.Hard:
+                    return Random.Range(9, 13);
+            }
+
+            return 1;
+        }
+
         List<CardView> CreateGameCardList()
         {
             var cards = GetDifferentCards();
@@ -89,7 +160,7 @@ namespace CardMatch
 
         List<CardView> GetDifferentCards()
         {
-            int differentCardsNumber = BoardConfig.GetDifficulty(Config.Difficulty);
+            int differentCardsNumber = GetDifficulty(_difficulty);
             differentCardsNumber = Mathf.Min(differentCardsNumber, Config.Cards.Count);//Ensure that we don't try to get more cards that we have
             var usedIndices = new HashSet<int>();
             var result = new List<CardView>();
