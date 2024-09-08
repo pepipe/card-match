@@ -12,6 +12,7 @@ namespace CardMatch.SaveGame
         
         public static void SaveGame(IEnumerable<CardView> cards, int score, int scoreMultiplier, float timer)
         {
+            if(cards == null) return;
             var gameState = CreateGameState(cards, score, scoreMultiplier, timer);
             string json = JsonUtility.ToJson(gameState);
             File.WriteAllText(SaveFilePath, json);

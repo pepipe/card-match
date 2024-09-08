@@ -32,12 +32,6 @@ namespace CardMatch.Card
             _cardFlip.OnCardFlipBack -= CardFlipBackHandler;
         }
 
-        public void LoadState(bool isActive, bool isFaceUp)
-        {
-            gameObject.SetActive(isActive);
-            _cardFlip.LoadState(isFaceUp);
-        }
-
         public void OnPointerClick(PointerEventData eventData)
         {
             if (_cardClicked) return;
@@ -48,6 +42,11 @@ namespace CardMatch.Card
         public void InitialShowCard(float showDuration)
         {
             _cardFlip.InitialShowCard(showDuration);
+        }
+
+        public void MakeCardFaceUp()
+        {
+            _cardFlip.MakeCardFaceUp();
         }
         
         public void Flip()

@@ -40,6 +40,13 @@ namespace CardMatch.Card
                 .Chain(Tween.Rotation(gameObject.transform, Vector3.zero, FlipDuration / 2f, Ease.OutQuint));
         }
         
+        public void MakeCardFaceUp()
+        {
+            _isShowingCard = true;
+            UpImage.gameObject.SetActive(_isShowingCard);
+            BackImage.gameObject.SetActive(!_isShowingCard);
+        }
+
         public void FlipCard()
         {
             float rotatingY = !_isShowingCard ? -90f : 90f;

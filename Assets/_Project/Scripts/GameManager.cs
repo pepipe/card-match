@@ -56,6 +56,7 @@ namespace CardMatch
             if (loadGame != null)
             {
                 _cards = await Board.SetupBoard(loadGame.CardStates, Config.Cards, InitialCardShowDuration);
+                _lastCardFacedUp = Board.SavedCardFacedUp();
                 //LOAD score, score multiplier and timer
             }
             else

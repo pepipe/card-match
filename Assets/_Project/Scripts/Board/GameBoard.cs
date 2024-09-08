@@ -12,8 +12,12 @@ namespace CardMatch.Board
     {
         [SerializeField] GridLayoutGroup Container;
 
+        public CardView SavedCardFacedUp() => _savedCardFaceUp;
+
         public Action<CardView> OnCardShow;
+
         List<CardView> _cardsInstances = new();
+        CardView _savedCardFaceUp;
 
         void OnDestroy()
         {
@@ -84,7 +88,11 @@ namespace CardMatch.Board
             for (int i = 0; i < _cardsInstances.Count; ++i)
             {
                 var cardState = savedCards[i];
-                _cardsInstances[i].LoadState(cardState.IsActive, cardState.IsFaceUp);
+                _cardsInstances[i].gameObject.SetActive(cardState.IsActive);
+
+                if (!savedCards[i].IsFaceUp) continue;
+                _cardsInstances[i].MakeCardFaceUp();
+                _savedCardFaceUp = _cardsInstances[i];
             }
         }
 
