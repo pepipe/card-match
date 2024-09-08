@@ -14,6 +14,7 @@ namespace CardMatch.Card
         [SerializeField] Image UpImage;
         
         public event Action OnCardShow;
+        public event Action OnCardFlipBack;
         
         bool _isShowingCard;
 
@@ -31,6 +32,7 @@ namespace CardMatch.Card
                 PrimeTween.Ease.OutQuint).OnComplete(() =>
             {
                 if(_isShowingCard) OnCardShow?.Invoke();
+                else OnCardFlipBack?.Invoke();
             });
         }
 

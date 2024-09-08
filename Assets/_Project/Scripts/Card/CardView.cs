@@ -21,11 +21,13 @@ namespace CardMatch.Card
         void OnEnable()
         {
             _cardFlip.OnCardShow += CardShowHandler;
+            _cardFlip.OnCardFlipBack += CardFlipBackHandler;
         }
         
         void OnDisable()
         {
             _cardFlip.OnCardShow -= CardShowHandler;
+            _cardFlip.OnCardFlipBack -= CardFlipBackHandler;
         }
 
         public void OnPointerClick(PointerEventData eventData)
@@ -35,15 +37,19 @@ namespace CardMatch.Card
             _cardFlip.FlipCard();
         }
 
-        public void Missmatch()
+        public void MissMatch()
         {
-            _cardClicked = false;
             _cardFlip.FlipCard();
         }
 
         void CardShowHandler()
         {
             OnCardClicked?.Invoke(this);
+        }
+
+        void CardFlipBackHandler()
+        {
+            _cardClicked = false;
         }
     }
 }
