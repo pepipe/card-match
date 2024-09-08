@@ -31,7 +31,7 @@ namespace CardMatch
         void Start()
         {
             _cards = CreateGameCardList();
-            Board.SetupBoard(_cards);
+            Board.SetupBoard(_cards).Forget();
         }
 
         void OnEnable()

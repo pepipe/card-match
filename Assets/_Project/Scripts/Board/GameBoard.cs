@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using CardMatch.Card;
-using CardMatch.Utils;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
-using Object = UnityEngine.Object;
 
 namespace CardMatch.Board
 {
@@ -23,11 +22,13 @@ namespace CardMatch.Board
             }
         }
 
-        public void SetupBoard(List<CardView> cardsPrefabs)
+        public async UniTaskVoid SetupBoard(List<CardView> cardsPrefabs)
         {
             float cardWidth = cardsPrefabs[0].GetComponent<RectTransform>().rect.width;
             SetBoardConstraints(cardWidth);
             PlaceCards(cardsPrefabs);
+            await UniTask.NextFrame();
+            Container.enabled = false;
         }
 
         void SetBoardConstraints(float cardWidth)
