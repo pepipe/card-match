@@ -64,7 +64,7 @@ namespace CardMatch.Board
             {
                 var cardView = Instantiate(cardsPrefabs[cardState.CardIndex], Container.transform);
                 cardView.CardId = cardState.CardId;
-                cardView.CardIndex = cardsPrefabs[cardState.CardIndex].CardIndex;
+                cardView.CardIndex = cardState.CardIndex;
                 cardView.OnCardShow += CardShowHandler;
                 _cardsInstances.Add(cardView);
             }
