@@ -24,6 +24,7 @@ namespace CardMatch
 
     public class GameManager : MonoBehaviour
     {
+        [SerializeField] bool UseResizableCards;
         [Header("Game Settings")] 
         [Tooltip("Difficulties: Easy - 2 to 4 different cards | Medium - 5 to 8 different cards | Hard - 9 to 12 different cards.")]
         [SerializeField] GameDifficulty Difficulty;
@@ -81,13 +82,27 @@ namespace CardMatch
             var loadGame = SaveManager.LoadGame();
             if (loadGame != null)
             {
-                _cards = await Board.SetupBoard(loadGame.CardStates, Config.Cards, InitialCardShowDuration);
+                if (UseResizableCards)
+                {
+                    _cards = await Board.SetupBoardWithResizableCards(loadGame.CardStates, Config, InitialCardShowDuration);
+                }
+                else
+                {
+                    _cards = await Board.SetupBoard(loadGame.CardStates, Config.Cards, InitialCardShowDuration);
+                }
                 _lastCardFacedUp = Board.SavedCardFacedUp();
                 _scoreSystem = new ScoreSystem(loadGame.Score, loadGame.ScoreMultiplier, loadGame.Time);
             }
             else
             {
-                _cards = await Board.SetupBoard(CreateGameCardList(), InitialCardShowDuration);
+                if (UseResizableCards)
+                {
+                    _cards = await Board.SetupBoardWithResizableCards(CreateGameCardList(), Config, InitialCardShowDuration);
+                }
+                else
+                {
+                    _cards = await Board.SetupBoard(CreateGameCardList(), InitialCardShowDuration);
+                }
                 _scoreSystem = new ScoreSystem();
             }
 
@@ -214,6 +229,8 @@ namespace CardMatch
         {
             int differentCardsNumber = GetDifficulty(_difficulty);
             differentCardsNumber = Mathf.Min(differentCardsNumber, Config.Cards.Count);//Ensure that we don't try to get more cards that we have
+            CardMatchLogger.Log($"Different cards number: {differentCardsNumber}");
+
             var usedIndices = new HashSet<int>();
             var result = new List<CardView>();
             while (usedIndices.Count < differentCardsNumber)

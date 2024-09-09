@@ -6,7 +6,10 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/_Project/_Scenes/Main.unity
+    path: Assets/_Project/_Scenes/MainResizableCards.unity
+    guid: a5e0bbfc1ee0d1d4f833fb36f19d5f19
+  - enabled: 1
+    path: Assets/_Project/_Scenes/MainFixCardSize.unity
     guid: 7ca99f0715de3cc478f76054e9f7af9b
   m_configObjects:
     com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 219f5348e8fb03e4ab0c9b248376202b, type: 2}

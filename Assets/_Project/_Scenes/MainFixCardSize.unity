@@ -377,6 +377,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71eb06fe2db940378ca1c2b234c2e703, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  UseResizableCards: 0
   Difficulty: 0
   Config: {fileID: 11400000, guid: 8c9f6987fa402f64a873e070f7d76d41, type: 2}
   CardShowDuration: 0.25
@@ -868,6 +869,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Container: {fileID: 1099587984}
+  ResizableContainer: {fileID: 0}
+  RowPrefab: {fileID: 0}
+  InvisibleCardPrefab: {fileID: 0}
 --- !u!1 &807376832
 GameObject:
   m_ObjectHideFlags: 0

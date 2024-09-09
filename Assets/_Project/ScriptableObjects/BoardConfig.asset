@@ -12,7 +12,73 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c1a266c97014fe1816875a4d8865906, type: 3}
   m_Name: BoardConfig
   m_EditorClassIdentifier: 
-  Difficulty: 0
+  Configurations:
+  - CardsCount: 4
+    RowsCount: 2
+    ColsCount: 2
+    InvisibleCards: []
+  - CardsCount: 6
+    RowsCount: 2
+    ColsCount: 3
+    InvisibleCards: []
+  - CardsCount: 8
+    RowsCount: 3
+    ColsCount: 3
+    InvisibleCards:
+    - Row: 1
+      Col: 1
+  - CardsCount: 10
+    RowsCount: 4
+    ColsCount: 3
+    InvisibleCards:
+    - Row: 1
+      Col: 1
+    - Row: 2
+      Col: 1
+  - CardsCount: 12
+    RowsCount: 4
+    ColsCount: 3
+    InvisibleCards: []
+  - CardsCount: 14
+    RowsCount: 4
+    ColsCount: 4
+    InvisibleCards:
+    - Row: 1
+      Col: 1
+    - Row: 2
+      Col: 2
+  - CardsCount: 16
+    RowsCount: 4
+    ColsCount: 4
+    InvisibleCards: []
+  - CardsCount: 18
+    RowsCount: 5
+    ColsCount: 4
+    InvisibleCards:
+    - Row: 2
+      Col: 1
+    - Row: 2
+      Col: 2
+  - CardsCount: 20
+    RowsCount: 5
+    ColsCount: 4
+    InvisibleCards: []
+  - CardsCount: 22
+    RowsCount: 5
+    ColsCount: 5
+    InvisibleCards:
+    - Row: 2
+      Col: 1
+    - Row: 2
+      Col: 2
+    - Row: 2
+      Col: 3
+  - CardsCount: 24
+    RowsCount: 5
+    ColsCount: 5
+    InvisibleCards:
+    - Row: 2
+      Col: 2
   Cards:
   - {fileID: 6211726325415962925, guid: 846cd6f2fa071a6498f5722b3654060a, type: 3}
   - {fileID: 7396624440010398949, guid: 368cba163d3c75749a31c28d5c7c1ed8, type: 3}
